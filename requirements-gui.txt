@@ -1,0 +1,4 @@
+-r requirements.txt
+# 仅 Windows 桌面控制台需要；无头服务器 / Docker 不安装
+customtkinter>=5.2,<6
+pystray>=0.19,<1

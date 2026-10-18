@@ -1,0 +1,92 @@
+# 配置示例：复制为 config.yaml 后填写自己的值。
+# config.yaml 含密钥，已被 .gitignore 排除，切勿提交、切勿外发。
+# 也可以完全不建 config.yaml，只通过环境变量注入（见 .env.example）。
+
+api:
+  provider: onebound
+  base_url: "https://api-gw.onebound.cn"   # onebound API 网关
+  key: "<your-api-key>"                     # 环境变量 ONEBOUND_API_KEY
+  secret: "<your-api-secret>"               # 环境变量 ONEBOUND_API_SECRET
+  qps: 3                                    # 每秒最多请求数，按套餐限频调整
+  sleep: 1                                  # 每单之间额外间隔秒数
+  timeout: 30
+
+paths:
+  samples: "./samples"
+  work: "./_pilot_work"                     # 临时文件、去抖状态、单实例锁
+  output: "./输出"                           # 每个订单一个文件夹
+  cache: "./缓存/cache.sqlite"               # 图片指纹去重缓存
+  log: "./日志"                              # 结构化 JSONL 日志
+  review: "./复核"                           # 待人工复核的候选图
+
+sheet:
+  # dingtalk / feishu / wps / xlsx；xlsx 可完全离线运行，适合本地演示
+  backend: "dingtalk"
+  columns:                                  # 表格列名 -> 程序字段
+    id: "订单号"
+    image_url: "图片链接"
+    confirm: "确认"
+    status: "状态"
+    save_path: "保存路径"
+    time: "处理时间"
+  confirm_values: ["是", "确认", "1", "true", "yes"]
+  poll_seconds: 30                          # 轮询间隔
+  confirm_delay_seconds: 180                # 打勾后去抖 3 分钟再处理
+  stale_minutes: 30                         # “处理中”超过该时长视为崩溃残留
+  dry_run: false
+
+  dingtalk:                                 # 钉钉在线表格（企业内部应用）
+    app_key: "<dingtalk-app-key>"           # DINGTALK_APP_KEY
+    app_secret: "<dingtalk-app-secret>"     # DINGTALK_APP_SECRET
+    workbook_id: "<workbook-id>"            # DINGTALK_WORKBOOK_ID
+    sheet_id: "<sheet-id>"                  # DINGTALK_SHEET_ID
+    operator_id: "<operator-union-id>"      # DINGTALK_OPERATOR_ID
+    read_range: "A1:Z2000"
+
+  feishu:                                   # 飞书多维表格
+    base_url: "https://open.feishu.cn"
+    app_id: "<feishu-app-id>"               # FEISHU_APP_ID
+    app_secret: "<feishu-app-secret>"       # FEISHU_APP_SECRET
+    app_token: "<bitable-app-token>"        # FEISHU_APP_TOKEN
+    table_id: "<table-id>"                  # FEISHU_TABLE_ID
+
+  wps:                                      # 金山文档在线表格
+    base_url: "https://www.kdocs.cn"
+    app_id: "<wps-app-id>"                  # WPS_APP_ID
+    app_secret: "<wps-app-secret>"          # WPS_APP_SECRET
+    access_token: "<oauth-access-token>"    # WPS_ACCESS_TOKEN
+    file_token: "<file-token>"              # WPS_FILE_TOKEN
+    sheet_idx: 0
+    read_range: "A1:Z2000"
+
+  xlsx:                                     # 本地 Excel，离线演示用
+    path: "./samples/orders.xlsx"
+
+matcher:                                    # 三档判定阈值，按真实数据标定
+  match_high: 5                             # pHash 汉明距离 <= 5 -> 命中
+  match_review: 10                          # 5~10 -> 进入 ORB 复核
+  orb_high: 20                              # ORB 内点 >= 20 -> 命中（抗裁剪）
+  orb_weak: 10                              # 10~20 -> 待人工复核
+  orb_nfeatures: 4000
+  orb_ratio: 0.8
+
+thresholds:
+  dedup: 5                                  # 订单级图片去重阈值
+  img_dedup: 5                              # 同一订单内图片去重阈值
+
+junk_filter:                                # 几何规则过滤 banner / logo / 长条图
+  min_long_side: 300
+  max_aspect: 3.0
+  max_aspect_tall: 4.0
+
+collect:
+  max_sellers: 6                            # 每个订单最多采集的卖家数
+  max_scan: 25                              # 最多扫描的候选商品数
+  max_detail: 30                            # 每个卖家最多抓取的详情图数
+  rerun_extra: 3                            # 同一订单再次上传时追加的卖家数
+
+test:
+  top_n: 20
+  fetch_sub_images: true
+  fetch_reviews: false
+  max_imgs_per_offer: 8

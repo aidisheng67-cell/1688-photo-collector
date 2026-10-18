@@ -1,0 +1,19 @@
+services:
+  collector:
+    build: .
+    image: 1688-photo-collector:local
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      COLLECTOR_CONFIG: /app/config/config.yaml
+      COLLECTOR_WORK: /data/work
+      COLLECTOR_OUTPUT: /data/output
+      COLLECTOR_CACHE: /data/cache/cache.sqlite
+      COLLECTOR_LOG: /data/logs
+      COLLECTOR_REVIEW: /data/review
+    volumes:
+      # config.yaml 含密钥，放在宿主机 config/ 下，只读挂载，不进镜像
+      - ./config:/app/config:ro
+      - ./data:/data

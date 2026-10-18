@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "1688-photo-collector"
+version = "0.1.0"
+description = "1688 实拍图自动采集：以图搜款、图像匹配、去重与订单文件夹交付"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.32,<3",
+    "PyYAML>=6.0,<7",
+    "Pillow>=11.0,<14",
+    "numpy>=2.0,<3",
+    "opencv-python-headless>=4.10,<5",
+    "openpyxl>=3.1,<4",
+    "pillow-avif-plugin>=1.4,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<10",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["."]
