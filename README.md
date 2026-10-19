@@ -5,6 +5,12 @@
 运营在共享表格里填一行订单号 + 图片链接，打勾确认后，程序自动完成搜款、图像比对、去重、下载、过滤和状态回写。适合电商视觉素材收集、同款比价、供应商找款等场景。
 
 > 仓库内的示例数据均为合成数据；本仓库不包含任何真实客户图片、订单或 API 凭证。
+>
+> 许可证：[MIT](LICENSE)，可自由使用、修改、分发和商用，保留版权声明即可。
+
+![离线演示](docs/demo.gif)
+
+*离线演示：`python demo.py`，不需要任何 API Key。*
 
 ## 业务流程
 
@@ -80,6 +86,75 @@ docker compose logs -f
 
 镜像只包含采集核心，**不包含** Windows 桌面控制台（`console.py`）与系统托盘。GUI 依赖见 `requirements-gui.txt`。
 
+## 3 分钟填 Key
+
+仓库只提交 `config.example.yaml` 和 `.env.example`，没有任何真实凭证。
+
+### 方式 A：config.yaml（本机推荐）
+
+```bash
+cp config.example.yaml config.yaml
+```
+
+至少填 onebound：
+
+```yaml
+api:
+  provider: onebound
+  base_url: "https://api-gw.onebound.cn"
+  key: "你的 onebound key"
+  secret: "你的 onebound secret"
+```
+
+表格后端按需选择：
+
+```yaml
+sheet:
+  backend: "xlsx"     # 本地 xlsx：不需要表格凭证
+  # backend: "dingtalk"
+  # backend: "feishu"
+  # backend: "wps"
+```
+
+- `xlsx`：填 `sheet.xlsx.path`，指向本地表格即可
+- `dingtalk`：填 `sheet.dingtalk.app_key` / `app_secret` / `workbook_id` / `sheet_id` / `operator_id`
+- `feishu`：填 `sheet.feishu.app_id` / `app_secret` / `app_token` / `table_id`
+- `wps`：填 `sheet.wps.app_id` / `app_secret` / `access_token` / `file_token`
+
+### 方式 B：环境变量（Docker / CI / 服务器推荐）
+
+```bash
+cp .env.example .env
+```
+
+Docker Compose 会读取 `.env`；本地直接运行 `python ...` 不会，需要先手动设置环境变量。PowerShell 示例：
+
+```powershell
+$env:ONEBOUND_API_KEY="你的 key"
+$env:ONEBOUND_API_SECRET="你的 secret"
+python watcher.py
+```
+
+环境变量优先级高于 `config.yaml`。
+
+### 最小填写组合
+
+| 你要做的事 | 最少需要 |
+| --- | --- |
+| 离线演示 `python demo.py` | 不需要任何 Key |
+| 真实以图搜款 | onebound `key` + `secret` |
+| 本地 xlsx 表格 | 不需要表格凭证 |
+| 钉钉 / 飞书 / WPS | 对应平台的应用凭证 |
+
+填完先验证：
+
+```bash
+python demo.py
+python watcher.py
+```
+
+`watcher.py` 会真实调用 onebound；建议先用小批量订单或测试表格验证。
+
 ## 配置
 
 配置分为三层，后者覆盖前者：
@@ -137,6 +212,7 @@ GitHub Actions 在 Python 3.10 / 3.12 上运行测试，并额外执行一次离
 ├── runlock.py          # 单实例文件锁
 ├── console.py          # Windows 桌面控制台（不进入 Docker）
 ├── demo.py             # 离线演示
+├── docs/demo.gif       # 离线演示 GIF
 └── tests/              # pytest
 ```
 
@@ -161,3 +237,9 @@ GitHub Actions 在 Python 3.10 / 3.12 上运行测试，并额外执行一次离
 - [ ] 用真实标注集输出匹配准确率与召回率报表
 - [ ] 增加 Prometheus 指标与失败告警
 - [ ] 增加采集结果的缩略图预览页
+
+## License
+
+本项目采用 [MIT License](LICENSE)。
+
+你可以自由使用、修改、分发和商用，只需保留版权声明与许可证声明。代码按“现状”提供，不附带任何担保。
